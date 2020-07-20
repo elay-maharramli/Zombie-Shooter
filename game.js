@@ -2,6 +2,15 @@ canvas = document.getElementById("canvas");
 ctx = canvas.getContext("2d");
 
 document.addEventListener("mousemove", move);
+document.addEventListener("click", function () {
+    game.bullets.push(new Bullet(
+       game.player.x + game.player.w - 10,
+       game.player.y + game.player.h - 32,
+       8,
+       ctx
+    ));
+
+})
 
 function move(event) {
     game.player.x = event.offsetX - game.player.w / 2
@@ -56,7 +65,6 @@ class Player
 
     draw()
     {
-        ctx.clearRect(0,0,800,700);
         this.ctx.drawImage(
             this.img,
             this.x, this.y,
@@ -65,11 +73,36 @@ class Player
     }
 }
 
+class Bullet
+{
+    constructor(x, y, dx, context) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.w = 15;
+        this.h = 4;
+        this.ctx = context;
+    }
+
+    update()
+    {
+    }
+
+    draw()
+    {
+        this.ctx.fillStyle = "rgb(240, 208, 0)";
+        this.ctx.fillRect(this.x, this.y, this.w, this.h);
+    }
+}
+
+
 class Game
 {
     constructor(context) {
         this.ctx = context;
         this.player = new Player(Helper.getRandomInt(0, 350), Helper.getRandomInt(0, 570), 5,5,this.ctx);
+        this.bullet = new Bullet(2000, 2000, 5, this.ctx);
+        this.bullets = [];
         this.loop();
     }
 
@@ -83,11 +116,31 @@ class Game
     update()
     {
         this.player.update();
+        this.bullet.update();
+
+        this.bullets.forEach((bullet, index) => {
+            if (bullet.x > 800)
+            {
+                Helper.removeIndex(this.bullets, index);
+            }
+            bullet.x += bullet.dx;
+            bullet.update();
+        });
     }
 
     draw()
     {
+        this.ctx.clearRect(0,0,800,700);
         this.player.draw();
+        this.bullet.draw();
+
+        for (let b in this.bullets)
+        {
+            if (this.bullets.hasOwnProperty(b))
+            {
+                this.bullets[b].draw();
+            }
+        }
     }
 }
 
