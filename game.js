@@ -1,6 +1,13 @@
 canvas = document.getElementById("canvas");
 ctx = canvas.getContext("2d");
 
+document.addEventListener("mousemove", move);
+
+function move(event) {
+    game.player.x = event.offsetX - game.player.w / 2
+    game.player.y = event.offsetY - game.player.h / 2;
+}
+
 class Helper
 {
     static getRandomInt(min, max)
@@ -49,6 +56,7 @@ class Player
 
     draw()
     {
+        ctx.clearRect(0,0,800,700);
         this.ctx.drawImage(
             this.img,
             this.x, this.y,
