@@ -6,6 +6,7 @@
     <style>
         #canvas {
             cursor: none;
+            background-image: url('img/bg.jpg');
         }
 
         #score-text {
@@ -66,10 +67,12 @@
             user-select: none;
         }
 
+
+
     </style>
 </head>
 <body>
-<canvas id="canvas" width="800" height="700" style="background-color: darkgrey"></canvas>
+<canvas id="canvas" width="800" height="600" style="z-index: 1"></canvas>
 <script src="game.js"></script>
 <span id="game-score">0</span>
 <span id="game-life">3</span>

@@ -1,3 +1,12 @@
+const SPEEDYZOMBIE_H = 84;
+const SPEEDYZOMBIE_W = 75;
+
+const ZOMBIE_H = 82;
+const ZOMBIE_W = 79;
+
+const SCREEN_H = 600;
+const SCREEN_W = 800;
+
 canvas = document.getElementById("canvas");
 ctx = canvas.getContext("2d");
 
@@ -48,6 +57,28 @@ class Helper
     }
 }
 
+class Background
+{
+    constructor(x, y, context) {
+        this.x = x;
+        this.y = y;
+        this.w = SCREEN_W;
+        this.h = SCREEN_H;
+        this.img = new Image();
+        this.img.src = 'img/bg.jpg';
+        this.ctx = context;
+    }
+
+    draw()
+    {
+        this.ctx.drawImage(
+            this.img,
+            this.x, this.y,
+            this.w, this.h
+        )
+    }
+}
+
 class Player
 {
     constructor(x, y, dx, dy, context) {
@@ -78,15 +109,40 @@ class Player
 
 class Zombie
 {
-    constructor(x, y, dx, dy, context) {
+    constructor(x, y, dx, dy, zombieimg, context) {
         this.x = x;
         this.y = y;
         this.dx = dx;
         this.dy = dy;
-        this.w = 67;
-        this.h = 59;
-        this.img = new Image();
-        this.img.src = 'img/zombie.png';
+        this.w = ZOMBIE_W;
+        this.h = ZOMBIE_H;
+        this.ctx = context;
+        this.zombieimg = zombieimg;
+    }
+
+    update()
+    {
+    }
+
+    draw()
+    {
+        this.ctx.drawImage(
+            this.zombieimg,
+            this.x, this.y,
+            this.w, this.h
+        )
+    }
+}
+
+class SpeedyZombie
+{
+    constructor(x, y, dx, speedyZombieImg, context) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.w = SPEEDYZOMBIE_W;
+        this.h = SPEEDYZOMBIE_H;
+        this.img = speedyZombieImg;
         this.ctx = context;
     }
 
@@ -126,21 +182,25 @@ class Bullet
     }
 }
 
-
 class Game
 {
     constructor(context) {
         this.ctx = context;
         this.player = new Player(Helper.getRandomInt(0, 350), Helper.getRandomInt(0, 570), 5,5,this.ctx);
-        this.bullet = new Bullet(2000, 2000, 5, this.ctx);
-        this.zombie = new Zombie(2000,2000,5,5,this.ctx);
         this.zombies = [];
+        this.speedyZombies = [];
         this.zombieTimer = 0;
+        this.speedyZombieTimer = 0;
         this.shotSound = new Audio()
         this.shotSound.src = 'sound/shot.mp3';
         this.zombieSound = new Audio();
         this.zombieSound.src = 'sound/playerdead.wav';
         this.zombieSpawnInterval = 50;
+        this.zombieimg = new Image();
+        this.zombieimg.src = 'img/zombie.png';
+        this.speedyzombieimg = new Image();
+        this.speedyzombieimg.src = 'img/zombie2.png';
+        this.speedyZombieSpawnInterval = 80;
         this.gameOver = false;
         this.bullets = [];
         this.life = 3;
@@ -158,16 +218,15 @@ class Game
     update()
     {
         this.player.update();
-        this.bullet.update();
-        this.zombie.update();
 
         if (this.zombieTimer % this.zombieSpawnInterval === 0)
         {
             this.zombies.push(new Zombie(
-                800 - this.zombie.w - 2,
-                Helper.getRandomInt(0, 700 - this.zombie.h - 2),
+                SCREEN_W,
+                Helper.getRandomInt(0, SCREEN_H - ZOMBIE_H - 2),
                 Helper.getRandomInt(3,5),
                 4,
+                this.zombieimg,
                 this.ctx
             ));
 
@@ -175,8 +234,62 @@ class Game
         }
 
         this.zombieTimer++;
+
+        if (this.speedyZombieTimer % this.speedyZombieSpawnInterval === 0)
+        {
+            this.speedyZombies.push(new SpeedyZombie(
+                SCREEN_W,
+                Helper.getRandomInt(0, SCREEN_H - SPEEDYZOMBIE_H - 2),
+                Helper.getRandomInt(6,8),
+                this.speedyzombieimg,
+                this.ctx
+            ));
+
+            this.speedyZombieTimer = 0;
+        }
+
+        this.speedyZombieTimer++;
+
+        this.speedyZombies.forEach((speedyzombie, index) => {
+            if (speedyzombie.x < 0 - speedyzombie.w) {
+                Helper.removeIndex(this.speedyZombies, index);
+            }
+
+            const speedyZombieCenterX = speedyzombie.x + speedyzombie.w / 2;
+            const speedyZombieCenterY = speedyzombie.y + speedyzombie.h / 2;
+            if (
+                speedyZombieCenterX >= this.player.x &&
+                speedyZombieCenterX <= this.player.x + this.player.w + 15 &&
+                speedyZombieCenterY >= this.player.y &&
+                speedyZombieCenterY <= this.player.y + this.player.h
+            ) {
+                this._lifeUpdate();
+                Helper.removeIndex(this.speedyZombies, index);
+                Helper.playSound(this.zombieSound);
+            }
+
+            for (let b in this.bullets)
+            {
+                const speedyZombieCenterX = speedyzombie.x + speedyzombie.w / 2;
+                const speedyZombieCenterY = speedyzombie.y + speedyzombie.h / 2;
+                if (
+                    speedyzombie.x >= this.bullets[b].x &&
+                    speedyzombie.x <= this.bullets[b].x + this.bullets[b].w &&
+                    speedyzombie.y <= this.bullets[b].y &&
+                    speedyzombie.y + speedyzombie.h >= this.bullets[b].y
+                )
+                {
+                    Helper.removeIndex(this.speedyZombies, index);
+                    this._scoreUpdate(2);
+                    this.bullets[b].x = 1500;
+                }
+            }
+
+            speedyzombie.x -= speedyzombie.dx;
+            speedyzombie.update();
+        });
         this.bullets.forEach((bullet, index) => {
-            if (bullet.x > 800)
+            if (bullet.x > SCREEN_W)
             {
                 Helper.removeIndex(this.bullets, index);
             }
@@ -203,16 +316,6 @@ class Game
                 Helper.playSound(this.zombieSound);
             }
 
-            if (this.life === 0)
-            {
-                this.gameOver = true;
-                Helper.playSound(this.zombieSound);
-                this.ctx.font = "70px Lucida Sans Typewriter";
-                this.ctx.fillStyle = "red";
-                this.ctx.fillText("Game Over!", 200, 325);
-                throw new Error("GAME OVER!");
-            }
-
             zombie.x -= zombie.dx;
             zombie.update();
 
@@ -229,26 +332,42 @@ class Game
                 )
                 {
                     Helper.removeIndex(this.zombies, index);
-                    this._scoreUpdate();
+                    this._scoreUpdate(1);
                     this.bullets[b].x = 1500;
                 }
             }
 
         });
+
+        if (this.life === 0) {
+            this.gameOver = true;
+            Helper.playSound(this.zombieSound);
+            this.ctx.font = "70px Lucida Sans Typewriter";
+            this.ctx.fillStyle = "red";
+            this.ctx.fillText("Game Over!", 200, 325);
+            throw new Error("GAME OVER!");
+        }
+
     }
 
     draw()
     {
-        this.ctx.clearRect(0,0,800,700);
+        this.ctx.clearRect(0,0,SCREEN_W,SCREEN_H);
         this.player.draw();
-        this.bullet.draw();
-        this.zombie.draw();
 
         for (let b in this.bullets)
         {
             if (this.bullets.hasOwnProperty(b))
             {
                 this.bullets[b].draw();
+            }
+        }
+
+        for (let s in this.speedyZombies)
+        {
+            if (this.speedyZombies.hasOwnProperty(s))
+            {
+                this.speedyZombies[s].draw();
             }
         }
 
@@ -261,15 +380,18 @@ class Game
         }
     }
 
-    _scoreUpdate()
+    _scoreUpdate(score)
     {
-        document.getElementById("game-score").innerText = '' + ++this.score;
+        this.score += score;
+        document.getElementById("game-score").innerText = '' + this.score;
     }
+
 
     _lifeUpdate()
     {
         document.getElementById("game-life").innerText = '' + --this.life;
     }
+
 }
 
 game = new Game(ctx);
