@@ -1,8 +1,8 @@
-const SPEEDYZOMBIE_H = 84;
-const SPEEDYZOMBIE_W = 75;
+const SPEEDYZOMBIE_H = 74;
+const SPEEDYZOMBIE_W = 65;
 
-const ZOMBIE_H = 82;
-const ZOMBIE_W = 79;
+const ZOMBIE_H = 72;
+const ZOMBIE_W = 69;
 
 const SCREEN_H = 600;
 const SCREEN_W = 800;
@@ -47,6 +47,11 @@ class Helper
         array[index] = array[array.length - 1];
         array[array.length - 1] = undefined;
         array.length = array.length - 1;
+    }
+
+    static _timestamp()
+    {
+        return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
     }
 
     static playSound(sound)
@@ -167,8 +172,12 @@ class Game
         this.ctx = context;
         this.player = new Player(Helper.getRandomInt(0, 350), Helper.getRandomInt(0, 570), 5,5,this.ctx);
         this.zombies = [];
-        this.speedyZombies = [];
         this.zombieTimer = 0;
+        this.fps = 60;
+        this.step = 1 / this.fps;
+        this.now = 0;
+        this.lastTime = Helper._timestamp();
+        this.deltaTime = 0;
         this.speedyZombieTimer = 0;
         this.shotSound = new Audio()
         this.shotSound.src = 'sound/shot.mp3';
@@ -189,8 +198,19 @@ class Game
 
     loop()
     {
-        this.update();
-        this.draw();
+
+        this.now = Helper._timestamp();
+        this.deltaTime = this.deltaTime + Math.min(1, (this.now - this.lastTime) / 1000);
+
+        while (this.deltaTime > this.step)
+        {
+            this.deltaTime = this.deltaTime - this.step;
+            this.update();
+        }
+
+        this.draw(this.deltaTime);
+        this.lastTime = this.now;
+
         requestAnimationFrame(() => this.loop());
     }
 
@@ -216,7 +236,7 @@ class Game
 
         if (this.speedyZombieTimer % this.speedyZombieSpawnInterval === 0)
         {
-            this.speedyZombies.push(new SpeedyZombie(
+            this.zombies.push(new SpeedyZombie(
                 SCREEN_W,
                 Helper.getRandomInt(0, SCREEN_H - SPEEDYZOMBIE_H - 2),
                 Helper.getRandomInt(6,8),
@@ -229,44 +249,6 @@ class Game
 
         this.speedyZombieTimer++;
 
-        this.speedyZombies.forEach((speedyzombie, index) => {
-            if (speedyzombie.x < 0 - speedyzombie.w) {
-                Helper.removeIndex(this.speedyZombies, index);
-            }
-
-            const speedyZombieCenterX = speedyzombie.x + speedyzombie.w / 2;
-            const speedyZombieCenterY = speedyzombie.y + speedyzombie.h / 2;
-            if (
-                speedyZombieCenterX >= this.player.x &&
-                speedyZombieCenterX <= this.player.x + this.player.w + 15 &&
-                speedyZombieCenterY >= this.player.y &&
-                speedyZombieCenterY <= this.player.y + this.player.h
-            ) {
-                this._lifeUpdate();
-                Helper.removeIndex(this.speedyZombies, index);
-                Helper.playSound(this.zombieSound);
-            }
-
-            for (let b in this.bullets)
-            {
-                const speedyZombieCenterX = speedyzombie.x + speedyzombie.w / 2;
-                const speedyZombieCenterY = speedyzombie.y + speedyzombie.h / 2;
-                if (
-                    speedyzombie.x >= this.bullets[b].x &&
-                    speedyzombie.x <= this.bullets[b].x + this.bullets[b].w &&
-                    speedyzombie.y <= this.bullets[b].y &&
-                    speedyzombie.y + speedyzombie.h >= this.bullets[b].y
-                )
-                {
-                    Helper.removeIndex(this.speedyZombies, index);
-                    this._scoreUpdate(2);
-                    this.bullets[b].x = 1500;
-                }
-            }
-
-            speedyzombie.x -= speedyzombie.dx;
-            speedyzombie.update();
-        });
         this.bullets.forEach((bullet, index) => {
             if (bullet.x > SCREEN_W)
             {
@@ -301,8 +283,6 @@ class Game
 
             for (let b in this.bullets)
             {
-                const zombieCenterX = zombie.x + zombie.w / 2;
-                const zombieCenterY = zombie.y + zombie.h / 2;
                 if (
                     zombie.x >= this.bullets[b].x &&
                     zombie.x <= this.bullets[b].x + this.bullets[b].w &&
@@ -342,13 +322,6 @@ class Game
             }
         }
 
-        for (let s in this.speedyZombies)
-        {
-            if (this.speedyZombies.hasOwnProperty(s))
-            {
-                this.speedyZombies[s].draw();
-            }
-        }
 
         for (let z in this.zombies)
         {
