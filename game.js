@@ -5,7 +5,7 @@ document.addEventListener("mousemove", move);
 document.addEventListener("click", function () {
     game.bullets.push(new Bullet(
        game.player.x + game.player.w - 10,
-       game.player.y + game.player.h - 32,
+       game.player.y + game.player.h - 27,
        8,
        ctx
     ));
@@ -52,8 +52,8 @@ class Player
         this.y = y;
         this.dx = dx;
         this.dy = dy;
-        this.w = 130
-        this.h = 120;
+        this.w = 110
+        this.h = 100;
         this.ctx = context;
         this.img = new Image();
         this.img.src = 'img/player.png';
@@ -80,8 +80,8 @@ class Zombie
         this.y = y;
         this.dx = dx;
         this.dy = dy;
-        this.w = 87;
-        this.h = 79;
+        this.w = 67;
+        this.h = 59;
         this.img = new Image();
         this.img.src = 'img/zombie.png';
         this.ctx = context;
@@ -133,7 +133,7 @@ class Game
         this.zombie = new Zombie(2000,2000,5,5,this.ctx);
         this.zombies = [];
         this.zombieTimer = 0;
-        this.zombieSpawnInterval = 40;
+        this.zombieSpawnInterval = 30;
         this.bullets = [];
         this.score = 0;
         this.loop();
