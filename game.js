@@ -135,6 +135,7 @@ class Game
         this.zombieTimer = 0;
         this.zombieSpawnInterval = 40;
         this.bullets = [];
+        this.score = 0;
         this.loop();
     }
 
@@ -188,12 +189,14 @@ class Game
                 const zombieCenterX = zombie.x + zombie.w / 2;
                 const zombieCenterY = zombie.y + zombie.h / 2;
                 if (
+                    zombie.x >= this.bullets[b].x &&
                     zombie.x <= this.bullets[b].x + this.bullets[b].w &&
                     zombie.y <= this.bullets[b].y &&
                     zombie.y + zombie.h >= this.bullets[b].y
                 )
                 {
                     Helper.removeIndex(this.zombies, index);
+                    this._scoreUpdate();
                     this.bullets[b].x = 1500;
                 }
             }
@@ -223,6 +226,11 @@ class Game
                 this.zombies[z].draw();
             }
         }
+    }
+
+    _scoreUpdate()
+    {
+        document.getElementById("game-score").innerText = '' + ++this.score;
     }
 }
 
