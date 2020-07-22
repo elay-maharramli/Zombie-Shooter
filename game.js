@@ -181,6 +181,23 @@ class Game
 
             zombie.x -= zombie.dx;
             zombie.update();
+
+
+            for (let b in this.bullets)
+            {
+                const zombieCenterX = zombie.x + zombie.w / 2;
+                const zombieCenterY = zombie.y + zombie.h / 2;
+                if (
+                    zombie.x <= this.bullets[b].x + this.bullets[b].w &&
+                    zombie.y <= this.bullets[b].y &&
+                    zombie.y + zombie.h >= this.bullets[b].y
+                )
+                {
+                    Helper.removeIndex(this.zombies, index);
+                    this.bullets[b].x = 1500;
+                }
+            }
+
         });
     }
 
