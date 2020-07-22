@@ -3,6 +3,7 @@ ctx = canvas.getContext("2d");
 
 document.addEventListener("mousemove", move);
 document.addEventListener("click", function () {
+    Helper.playSound(game.shotSound);
     game.bullets.push(new Bullet(
        game.player.x + game.player.w - 10,
        game.player.y + game.player.h - 27,
@@ -133,7 +134,11 @@ class Game
         this.zombie = new Zombie(2000,2000,5,5,this.ctx);
         this.zombies = [];
         this.zombieTimer = 0;
-        this.zombieSpawnInterval = 35;
+        this.shotSound = new Audio()
+        this.shotSound.src = 'sound/shot.mp3';
+        this.zombieSound = new Audio();
+        this.zombieSound.src = 'sound/playerdead.wav';
+        this.zombieSpawnInterval = 50;
         this.bullets = [];
         this.score = 0;
         this.loop();
@@ -189,6 +194,7 @@ class Game
                 zombieCenterY <= this.player.y + this.player.h
             )
             {
+                Helper.playSound(this.zombieSound);
                 this.gameover = this.ctx.font = "70px Lucida Sans Typewriter";
                 this.ctx.fillStyle = "red";
                 this.ctx.fillText("Game Over!", 200, 325);
