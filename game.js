@@ -57,27 +57,6 @@ class Helper
     }
 }
 
-class Background
-{
-    constructor(x, y, context) {
-        this.x = x;
-        this.y = y;
-        this.w = SCREEN_W;
-        this.h = SCREEN_H;
-        this.img = new Image();
-        this.img.src = 'img/bg.jpg';
-        this.ctx = context;
-    }
-
-    draw()
-    {
-        this.ctx.drawImage(
-            this.img,
-            this.x, this.y,
-            this.w, this.h
-        )
-    }
-}
 
 class Player
 {
