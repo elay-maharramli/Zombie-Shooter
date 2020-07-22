@@ -133,7 +133,7 @@ class Game
         this.zombie = new Zombie(2000,2000,5,5,this.ctx);
         this.zombies = [];
         this.zombieTimer = 0;
-        this.zombieSpawnInterval = 30;
+        this.zombieSpawnInterval = 35;
         this.bullets = [];
         this.score = 0;
         this.loop();
@@ -157,7 +157,7 @@ class Game
             this.zombies.push(new Zombie(
                 800 - this.zombie.w - 2,
                 Helper.getRandomInt(0, 700 - this.zombie.h - 2),
-                4,
+                Helper.getRandomInt(3,5),
                 4,
                 this.ctx
             ));
@@ -178,6 +178,21 @@ class Game
             if (zombie.x < 0 - zombie.w)
             {
                 Helper.removeIndex(this.zombies, index);
+            }
+
+            const zombieCenterX = zombie.x + zombie.w / 2;
+            const zombieCenterY = zombie.y + zombie.h / 2;
+            if (
+                zombieCenterX >= this.player.x &&
+                zombieCenterX <= this.player.x + this.player.w + 15 &&
+                zombieCenterY >= this.player.y &&
+                zombieCenterY <= this.player.y + this.player.h
+            )
+            {
+                this.gameover = this.ctx.font = "70px Lucida Sans Typewriter";
+                this.ctx.fillStyle = "red";
+                this.ctx.fillText("Game Over!", 200, 325);
+                throw new Error("GAME OVER!");
             }
 
             zombie.x -= zombie.dx;
