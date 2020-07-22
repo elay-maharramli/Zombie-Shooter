@@ -11,7 +11,18 @@
         #score-text {
             position: absolute;
             left: 33px;
-            top: 18px;
+            top: 8px;
+            font-size: 20px;
+            font-weight: bolder;
+            font-family: "Comic Sans MS", serif;
+            color: black;
+            user-select: none;
+        }
+
+        #life-text {
+            position: absolute;
+            left: 33px;
+            top: 32px;
             font-size: 20px;
             font-weight: bolder;
             font-family: "Comic Sans MS", serif;
@@ -22,7 +33,19 @@
         #game-score {
             position: absolute;
             left: 100px;
-            top: 41px;
+            top: 31px;
+            font-size: 18px;
+            font-weight: bolder;
+            font-family: "Comic Sans MS",serif;
+            color: black;
+            user-select: none;
+        }
+
+        #game-life
+        {
+            position: absolute;
+            left: 100px;
+            top: 55px;
             font-size: 18px;
             font-weight: bolder;
             font-family: "Comic Sans MS",serif;
@@ -49,7 +72,9 @@
 <canvas id="canvas" width="800" height="700" style="background-color: darkgrey"></canvas>
 <script src="game.js"></script>
 <span id="game-score">0</span>
+<span id="game-life">3</span>
 <p id="score-text">Score: </p>
+<p id="life-text">Lifes: </p>
 <a href="https://github.com/elay-maharramli/Zombie-Shooter" id="made-by">Elay Maharramli</a>
 <p id="made-by-text">Made By: </p>
 </body>

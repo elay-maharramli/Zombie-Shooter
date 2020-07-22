@@ -3,14 +3,16 @@ ctx = canvas.getContext("2d");
 
 document.addEventListener("mousemove", move);
 document.addEventListener("click", function () {
-    Helper.playSound(game.shotSound);
-    game.bullets.push(new Bullet(
-       game.player.x + game.player.w - 10,
-       game.player.y + game.player.h - 27,
-       8,
-       ctx
-    ));
-
+    if (game.gameOver === false)
+    {
+        Helper.playSound(game.shotSound);
+        game.bullets.push(new Bullet(
+            game.player.x + game.player.w - 10,
+            game.player.y + game.player.h - 27,
+            12,
+            ctx
+        ));
+    }
 })
 
 function move(event) {
@@ -139,7 +141,9 @@ class Game
         this.zombieSound = new Audio();
         this.zombieSound.src = 'sound/playerdead.wav';
         this.zombieSpawnInterval = 50;
+        this.gameOver = false;
         this.bullets = [];
+        this.life = 3;
         this.score = 0;
         this.loop();
     }
@@ -194,8 +198,16 @@ class Game
                 zombieCenterY <= this.player.y + this.player.h
             )
             {
+                this._lifeUpdate();
+                Helper.removeIndex(this.zombies, index);
                 Helper.playSound(this.zombieSound);
-                this.gameover = this.ctx.font = "70px Lucida Sans Typewriter";
+            }
+
+            if (this.life === 0)
+            {
+                this.gameOver = true;
+                Helper.playSound(this.zombieSound);
+                this.ctx.font = "70px Lucida Sans Typewriter";
                 this.ctx.fillStyle = "red";
                 this.ctx.fillText("Game Over!", 200, 325);
                 throw new Error("GAME OVER!");
@@ -252,6 +264,11 @@ class Game
     _scoreUpdate()
     {
         document.getElementById("game-score").innerText = '' + ++this.score;
+    }
+
+    _lifeUpdate()
+    {
+        document.getElementById("game-life").innerText = '' + --this.life;
     }
 }
 
