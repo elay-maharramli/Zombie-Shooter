@@ -4,6 +4,9 @@ const SPEEDYZOMBIE_W = 65;
 const ZOMBIE_H = 72;
 const ZOMBIE_W = 69;
 
+const BOSS_W = 232;
+const BOSS_H = 300;
+
 const SCREEN_H = 600;
 const SCREEN_W = 800;
 
@@ -118,6 +121,32 @@ class Zombie
     }
 }
 
+class Boss
+{
+    constructor(x, y, dx, bossImg, context) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.w = BOSS_W;
+        this.h = BOSS_H;
+        this.ctx = context;
+        this.bossImg = bossImg;
+    }
+
+    update()
+    {
+    }
+
+    draw()
+    {
+        this.ctx.drawImage(
+            this.bossImg,
+            this.x, this.y,
+            this.w, this.h
+        );
+    }
+}
+
 class SpeedyZombie
 {
     constructor(x, y, dx, speedyZombieImg, context) {
@@ -188,17 +217,22 @@ class Game
         this.zombieimg.src = 'img/zombie.png';
         this.speedyzombieimg = new Image();
         this.speedyzombieimg.src = 'img/zombie2.png';
+        this.bosszombieimg = new Image();
+        this.bosszombieimg.src = 'img/boss.png';
         this.speedyZombieSpawnInterval = 80;
         this.gameOver = false;
         this.bullets = [];
+        this.bosses = [];
+        this.bossTimer = 1;
+        this.bossSpawnInterval = 1900;
         this.life = 3;
+        this.bossLife = 20;
         this.score = 0;
         this.loop();
     }
 
     loop()
     {
-
         this.now = Helper._timestamp();
         this.deltaTime = this.deltaTime + Math.min(1, (this.now - this.lastTime) / 1000);
 
@@ -249,6 +283,21 @@ class Game
 
         this.speedyZombieTimer++;
 
+        if (this.bossTimer % this.bossSpawnInterval === 0) {
+            this.bossLife = 20;
+            this.bosses.push(new Boss(
+                SCREEN_W,
+                Helper.getRandomInt(0, SCREEN_H - BOSS_H - 2),
+                1,
+                this.bosszombieimg,
+                this.ctx
+            ));
+
+            this.bossTimer = 0;
+        }
+
+        this.bossTimer++;
+
         this.bullets.forEach((bullet, index) => {
             if (bullet.x > SCREEN_W)
             {
@@ -288,15 +337,15 @@ class Game
                     zombie.x <= this.bullets[b].x + this.bullets[b].w &&
                     zombie.y <= this.bullets[b].y &&
                     zombie.y + zombie.h >= this.bullets[b].y
-                )
-                {
+                ) {
                     Helper.removeIndex(this.zombies, index);
                     this._scoreUpdate(1);
                     this.bullets[b].x = 1500;
                 }
             }
-
         });
+
+
 
         if (this.life === 0) {
             this.gameOver = true;
@@ -306,6 +355,47 @@ class Game
             this.ctx.fillText("Game Over!", 200, 325);
             throw new Error("GAME OVER!");
         }
+
+        this.bosses.forEach((boss, index) => {
+            for (let b in this.bullets)
+            {
+                const bossCenterX = boss.x + boss.w / 2;
+                const bossCenterY = boss.y + boss.h / 2;
+                if (
+                    bossCenterX >= this.bullets[b].x &&
+                    bossCenterX <= this.bullets[b].x + this.bullets[b].w &&
+                    boss.y <= this.bullets[b].y &&
+                    boss.y + boss.h >= this.bullets[b].y
+                )
+                {
+                    this.bullets[b].x = 1500;
+                    this.bossLife--;
+                }
+
+                if (this.bossLife === 0)
+                {
+                    Helper.removeIndex(this.bosses, index);
+                    this._scoreUpdate(5);
+                }
+
+            }
+
+            boss.x -= boss.dx;
+
+            const bossCenterX = boss.x + boss.w / 2;
+            const bossCenterY = boss.y + boss.h / 2;
+            if (
+                boss.x + boss.w >= this.player.x &&
+                boss.x + 100 <= this.player.x + this.player.w &&
+                boss.y - 15 <= this.player.y &&
+                boss.y + boss.h - 70 >= this.player.y
+            )
+            {
+                this.life = 0;
+            }
+
+            boss.update();
+        });
 
     }
 
@@ -328,6 +418,14 @@ class Game
             if (this.zombies.hasOwnProperty(z))
             {
                 this.zombies[z].draw();
+            }
+        }
+
+        for (let i in this.bosses)
+        {
+            if (this.bosses.hasOwnProperty(i))
+            {
+                this.bosses[i].draw();
             }
         }
     }
