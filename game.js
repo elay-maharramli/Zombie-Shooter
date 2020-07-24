@@ -65,6 +65,26 @@ class Helper
     }
 }
 
+class Rect
+{
+    constructor(x, y, context) {
+        this.x = x;
+        this.y = y;
+        this.w = 800;
+        this.h = 50;
+        this.ctx = context;
+    }
+
+    update()
+    {
+    }
+
+    draw()
+    {
+        this.ctx.fillStyle = 'rgb(0,135,255)';
+        this.ctx.fillRect(this.x, this.y, this.w, this.h);
+    }
+}
 
 class Player
 {
@@ -222,6 +242,7 @@ class Game
         this.speedyZombieSpawnInterval = 80;
         this.gameOver = false;
         this.bullets = [];
+        this.rect = new Rect(0,600, this.ctx);
         this.bosses = [];
         this.bossTimer = 1;
         this.bossSpawnInterval = 1900;
@@ -402,6 +423,7 @@ class Game
     draw()
     {
         this.ctx.clearRect(0,0,SCREEN_W,SCREEN_H);
+        this.rect.draw();
         this.player.draw();
 
         for (let b in this.bullets)
